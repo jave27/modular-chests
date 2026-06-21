@@ -19,6 +19,7 @@ function CreateChestEntity(ChestName, BaseChestName, IconName, BaseInventorySize
 	    collision_box = EntityCollisionBox,
 	    selection_box = EntitySelectionBox,
 	    inventory_size = BaseInventorySize*(NumChestsConnected-NumFillerChests),
+	    quality_affects_inventory_size = true,
 	    open_sound = { filename = "__base__/sound/metallic-chest-open.ogg" },
 	    close_sound = { filename = "__base__/sound/metallic-chest-close.ogg" },
 	    picture = {

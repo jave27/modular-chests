@@ -6,6 +6,14 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
     HandlePlacedEntity(event)
 end)
 
+script.on_event(defines.events.script_raised_built, function(event)
+    HandlePlacedEntity(event)
+end)
+
+script.on_event(defines.events.script_raised_revive, function(event)
+    HandlePlacedEntity(event)
+end)
+
 function HandlePlacedEntity(event)
     local ModularChest = {
         ["Tier1"] = {
@@ -69,12 +77,21 @@ function HandlePlacedEntity(event)
 
     local NewChestX = event.entity.position.x
     local NewChestY = event.entity.position.y
+    local CurrentQuality = event.entity.quality.name
 
     --local CurrentSurface = game.players[event.player_index].surface
     local CurrentSurface = event.entity.surface
     -- Robot- and script-built entities do not always have a last_user.
     -- The entity itself always carries the force that the merged chest needs.
     local CurrentUserForce = event.entity.force
+
+    local function FindChest(ChestName, Position)
+        local Chest = CurrentSurface.find_entity(ChestName, Position)
+        if Chest ~= nil and Chest.quality.name == CurrentQuality then
+            return Chest
+        end
+        return nil
+    end
 
     function DestroyChest(Direction, OffsetPos)
     	local SearchX = 0
@@ -90,37 +107,41 @@ function HandlePlacedEntity(event)
 
         local ChestInventory
 
-    	if CurrentSurface.find_entity(ModularChest[CurrentChestTier]["Size1"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
-    		if CurrentSurface.find_entity(ModularChest[CurrentChestTier]["Size1"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}).can_be_destroyed() then
-                ChestInventory = CurrentSurface.find_entity(ModularChest[CurrentChestTier]["Size1"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}).get_inventory(defines.inventory.chest).get_contents()
-    			CurrentSurface.find_entity(ModularChest[CurrentChestTier]["Size1"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}).destroy()
-                return ChestInventory
-    		end
-    	end
+        local ChestPosition = { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}
+        local FoundChest = FindChest(ModularChest[CurrentChestTier]["Size1"], ChestPosition)
 
-        if CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size6"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        if FoundChest ~= nil then
+            if FoundChest.can_be_destroyed() then
+                ChestInventory = FoundChest.get_inventory(defines.inventory.chest).get_contents()
+                FoundChest.destroy()
+                return ChestInventory
+            end
+        end
+
+        if FindChest(ModularChest[CurrentChestTier][Direction]["Size6"], ChestPosition) ~= nil then
             FoundChestSize = "Size6"
-        elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size13"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size13"], ChestPosition) ~= nil then
             FoundChestSize = "Size13"
-        elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size20"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size20"], ChestPosition) ~= nil then
             FoundChestSize = "Size20"
-        elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size27"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size27"], ChestPosition) ~= nil then
             FoundChestSize = "Size27"
-        elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size34"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size34"], ChestPosition) ~= nil then
             FoundChestSize = "Size34"
-        elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size41"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size41"], ChestPosition) ~= nil then
             FoundChestSize = "Size41"
-        elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size48"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size48"], ChestPosition) ~= nil then
             FoundChestSize = "Size48"
-        elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size55"], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}) ~= nil then
+        elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size55"], ChestPosition) ~= nil then
             FoundChestSize = "Size55"
         else
             return ChestInventory
         end
 
-        if CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction][FoundChestSize], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}).can_be_destroyed() then
-            ChestInventory = CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction][FoundChestSize], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}).get_inventory(defines.inventory.chest).get_contents()
-            CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction][FoundChestSize], { NewChestX + (OffsetPos * SearchX), NewChestY + (OffsetPos * SearchY)}).destroy()
+        FoundChest = FindChest(ModularChest[CurrentChestTier][Direction][FoundChestSize], ChestPosition)
+        if FoundChest.can_be_destroyed() then
+            ChestInventory = FoundChest.get_inventory(defines.inventory.chest).get_contents()
+            FoundChest.destroy()
         end
 
         return ChestInventory
@@ -134,22 +155,28 @@ function HandlePlacedEntity(event)
     	if Direction == "horizontal" then
     		NewEntity = CurrentSurface.create_entity(
 			{
-    	    	name=ChestName,
-    	    	force=CurrentUserForce,
-    	    	position={NewChestX - LowPos - (0.5 * ChestSize - 0.5), NewChestY}
+                name=ChestName,
+                force=CurrentUserForce,
+                quality=CurrentQuality,
+                position={NewChestX - LowPos - (0.5 * ChestSize - 0.5), NewChestY}
     		})
     	elseif Direction == "vertical" then
     		NewEntity = CurrentSurface.create_entity(
 			{
-    	    	name=ChestName,
-    	    	force=CurrentUserForce,
-    	    	position={NewChestX, NewChestY - LowPos - (0.5 * ChestSize - 0.5)}
+                name=ChestName,
+                force=CurrentUserForce,
+                quality=CurrentQuality,
+                position={NewChestX, NewChestY - LowPos - (0.5 * ChestSize - 0.5)}
     		})
     	end
 
         for k, v in pairs(ChestInventories) do
             for key, value in pairs(v) do
-                NewEntity.get_inventory(defines.inventory.chest).insert({name=value.name, count=value.count})
+                NewEntity.get_inventory(defines.inventory.chest).insert({
+                    name=value.name,
+                    count=value.count,
+                    quality=value.quality
+                })
             end
         end
     end
@@ -204,23 +231,26 @@ function HandlePlacedEntity(event)
 
     	--create array with data about chests in the world around the newly placed chest
 		for i = -54, 54 do
-            if CurrentSurface.find_entity(ModularChest[CurrentChestTier]["Size1"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+            local SearchPosition = { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}
+            if FindChest(ModularChest[CurrentChestTier]["Size1"], SearchPosition) ~= nil then
                 SearchArray[i] = 1
             else
-                if CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size6"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+                if FindChest(ModularChest[CurrentChestTier][Direction]["Size6"], SearchPosition) ~= nil then
                     SearchArray[i] = 6
-                elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size13"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+                elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size13"], SearchPosition) ~= nil then
                     SearchArray[i] = 13
-                elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size20"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+                elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size20"], SearchPosition) ~= nil then
                     SearchArray[i] = 20
-                elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size27"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+                elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size27"], SearchPosition) ~= nil then
                     SearchArray[i] = 27
-                elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size34"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+                elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size34"], SearchPosition) ~= nil then
                     SearchArray[i] = 34
-                elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size41"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+                elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size41"], SearchPosition) ~= nil then
                     SearchArray[i] = 41
-                elseif CurrentSurface.find_entity(ModularChest[CurrentChestTier][Direction]["Size48"], { NewChestX - (i * SearchX), NewChestY - (i * SearchY)}) ~= nil then
+                elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size48"], SearchPosition) ~= nil then
                     SearchArray[i] = 48
+                elseif FindChest(ModularChest[CurrentChestTier][Direction]["Size55"], SearchPosition) ~= nil then
+                    SearchArray[i] = 55
                 end
             end
 		end
