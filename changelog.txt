@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+Version: 2.0.15
+Date: 2026-06-21
+  Bugfixes:
+    - Fixed a crash when construction robots or scripts placed a modular chest without assigning
+      last_user. Merged chests now inherit their force directly from the placed entity.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.14
 Date: 2026-06-21
   Features:

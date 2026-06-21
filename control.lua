@@ -72,7 +72,9 @@ function HandlePlacedEntity(event)
 
     --local CurrentSurface = game.players[event.player_index].surface
     local CurrentSurface = event.entity.surface
-    local CurrentUserForce = event.entity.last_user.force
+    -- Robot- and script-built entities do not always have a last_user.
+    -- The entity itself always carries the force that the merged chest needs.
+    local CurrentUserForce = event.entity.force
 
     function DestroyChest(Direction, OffsetPos)
     	local SearchX = 0
