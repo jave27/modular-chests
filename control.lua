@@ -84,12 +84,40 @@ function HandlePlacedEntity(event)
     -- Robot- and script-built entities do not always have a last_user.
     -- The entity itself always carries the force that the merged chest needs.
     local CurrentUserForce = event.entity.force
+    local WireConnections = {}
 
     local function FindChest(ChestName, Position)
         return CurrentSurface.find_entity(
             {name=ChestName, quality=CurrentQuality},
             Position
         )
+    end
+
+    local function SaveWireConnections(Chest)
+        for _, ConnectorId in pairs({
+            defines.wire_connector_id.circuit_red,
+            defines.wire_connector_id.circuit_green
+        }) do
+            local Connector = Chest.get_wire_connector(ConnectorId, false)
+            if Connector ~= nil then
+                for _, Connection in pairs(Connector.connections) do
+                    WireConnections[#WireConnections + 1] = {
+                        source_connector_id = ConnectorId,
+                        target = Connection.target,
+                        origin = Connection.origin
+                    }
+                end
+            end
+        end
+    end
+
+    local function RestoreWireConnections(Chest)
+        for _, Connection in pairs(WireConnections) do
+            if Connection.target.valid and Connection.target.owner.valid then
+                local Connector = Chest.get_wire_connector(Connection.source_connector_id, true)
+                Connector.connect_to(Connection.target, false, Connection.origin)
+            end
+        end
     end
 
     function DestroyChest(Direction, OffsetPos)
@@ -112,6 +140,7 @@ function HandlePlacedEntity(event)
         if FoundChest ~= nil then
             if FoundChest.can_be_destroyed() then
                 ChestInventory = FoundChest.get_inventory(defines.inventory.chest).get_contents()
+                SaveWireConnections(FoundChest)
                 FoundChest.destroy()
                 return ChestInventory
             end
@@ -140,6 +169,7 @@ function HandlePlacedEntity(event)
         FoundChest = FindChest(ModularChest[CurrentChestTier][Direction][FoundChestSize], ChestPosition)
         if FoundChest.can_be_destroyed() then
             ChestInventory = FoundChest.get_inventory(defines.inventory.chest).get_contents()
+            SaveWireConnections(FoundChest)
             FoundChest.destroy()
         end
 
@@ -178,6 +208,8 @@ function HandlePlacedEntity(event)
                 })
             end
         end
+
+        RestoreWireConnections(NewEntity)
     end
 
     function PlaceChest(Direction, ChestSize, TileArray, LowPos, HighPos)

@@ -8,6 +8,7 @@ Date: 2026-06-21
       quality-based inventory-size bonus.
     - Item-stack quality is now preserved when chest contents are transferred during a merge.
     - Modular chests placed or revived by another mod's script now use the normal merge logic.
+    - Red and green circuit-wire connections are now restored after chests merge or expand.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.15
 Date: 2026-06-21
