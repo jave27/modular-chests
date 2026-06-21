@@ -36,10 +36,15 @@ Merged chest blueprints can be built by construction robots. A merged ghost
 requests the appropriate number of ordinary modular iron or steel chest items,
 so no unobtainable merged-chest item is required.
 
+## Development
+
+Factorio integration tests and contribution instructions are documented in
+[DEVELOPMENT.md](DEVELOPMENT.md).
+
 ## Credits
 
-- Lord Binary (`krisgreg`) — original author
-- Gaddhi — additional chest lengths
-- DraLUSAD — force-preservation bug report
-- `aaVenger` — later maintenance and Factorio 2.0 port
-- `jave27` — continuation maintenance and blueprint construction fix
+- Lord Binary (`krisgreg`) - original author
+- Gaddhi - additional chest lengths
+- DraLUSAD - force-preservation bug report
+- `aaVenger` - later maintenance and Factorio 2.0 port
+- `jave27` - continuation maintenance and blueprint construction fix

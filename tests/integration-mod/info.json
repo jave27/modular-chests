@@ -1,0 +1,12 @@
+{
+  "name": "modular-chests-continued-tests",
+  "version": "1.0.0",
+  "title": "Modular Chests Continued Integration Tests",
+  "author": "Modular Chests Continued contributors",
+  "factorio_version": "2.0",
+  "dependencies": [
+    "base >= 2.0",
+    "quality",
+    "modular-chests-continued"
+  ]
+}

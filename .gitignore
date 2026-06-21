@@ -1,0 +1,11 @@
+# Portable integration-test output
+/.test-output/
+
+# Locally packaged releases
+/modular-chests-continued_*.zip
+
+# Factorio runtime artifacts, if a contributor points write-data at the repo
+/.lock
+/factorio-*.log
+/script-output/
+/saves/
