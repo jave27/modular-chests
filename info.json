@@ -1,14 +1,13 @@
 {
   "name": "modular-chests-continued",
-  "version": "2.0.17",
+  "version": "2.0.18",
   "title": "Modular Chests Continued",
   "author": "jave27; based on Modular Chests by Lord Binary",
   "contact": "https://github.com/jave27/modular-chests/issues",
   "homepage": "https://github.com/jave27/modular-chests",
   "factorio_version": "2.0",
   "dependencies": [
-    "base >= 2.0",
-    "! LB-Modular-Chests"
+    "base >= 2.0"
   ],
   "description": "Maintained continuation of Modular Chests. Adjacent iron or steel modules merge into long train-loading chests, with working construction-robot and blueprint support. Existing prototype names are preserved for migration from LB-Modular-Chests."
 }

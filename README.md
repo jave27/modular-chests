@@ -28,7 +28,8 @@ blueprints remain compatible:
 4. Load the save and confirm the mod replacement when Factorio prompts.
 
 The two mods cannot be enabled together because they define the same
-prototypes.
+prototypes. This continuation does not declare the original as a dependency or
+conflict, so disable `LB-Modular-Chests` manually before enabling it.
 
 ## Blueprint and robot support
 

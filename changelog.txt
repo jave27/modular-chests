@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.18
+Date: 2026-06-21
+  Changes:
+    - Removed the declared conflict with LB-Modular-Chests so the mod portal dependency graph no
+      longer lists the abandoned original mod. The two mods still cannot be enabled together
+      because this continuation intentionally preserves the original prototype names.
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.17
 Date: 2026-06-21
