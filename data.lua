@@ -1,5 +1,5 @@
 require("circuit-connector-generated-definitions")
-require("prototypes.circuit-connector-definitions")
+--require("prototypes.circuit-connector-definitions")
 
 require("prototypes.entity.entities")
 
