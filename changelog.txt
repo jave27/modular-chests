@@ -1,0 +1,84 @@
+---------------------------------------------------------------------------------------------------
+Version: 2.0.14
+Date: 2026-06-21
+  Features:
+    - Re-released the mod as Modular Chests Continued under the new internal name
+      "modular-chests-continued".
+    - Preserved the original item, recipe, and entity prototype names so existing saves and
+      blueprints can migrate from LB-Modular-Chests.
+  Bugfixes:
+    - Added placeable_by metadata to every merged iron and steel chest entity, allowing
+      construction robots to satisfy blueprint ghosts with the correct number of base modular
+      chest items.
+  Info:
+    - This release continues the MIT-licensed Modular Chests mod originally created by Lord
+      Binary (krisgreg), later maintained and ported through version 2.0.13 by aaVenger.
+    - The original LB-Modular-Chests mod and this continuation are marked incompatible because
+      they intentionally provide the same prototype names.
+---------------------------------------------------------------------------------------------------
+Version: 2.0.13
+Date: 2024-10-24
+  Bugfixes:
+    - Fixed a bug related to merging chests containing items.
+---------------------------------------------------------------------------------------------------
+Version: 2.0.12
+Date: 2024-10-23
+  Changes:
+    - Updated to Factorio 2.0.
+---------------------------------------------------------------------------------------------------
+Version: 1.1.11
+Date: 2020-12-05
+  Changes:
+    - Updated to Factorio 1.1.
+---------------------------------------------------------------------------------------------------
+Version: 0.18.10
+Date: 2020-07-07
+  Bugfixes:
+    - Modular chests placed by construction robots now merge correctly.
+---------------------------------------------------------------------------------------------------
+Version: 0.18.9
+Date: 2020-03-28
+  Changes:
+    - Updated to Factorio 0.18.
+---------------------------------------------------------------------------------------------------
+Version: 0.17.8
+Date: 2019-10-25
+  Bugfixes:
+    - Merged chests now retain the force of the player who placed them instead of always using
+      the default player force. Thanks to DraLUSAD for the report.
+---------------------------------------------------------------------------------------------------
+Version: 0.17.7
+Date: 2019-02-27
+  Features:
+    - Added Modular Steel Chests.
+  Changes:
+    - Updated to Factorio 0.17.
+    - Refactored the code to make maintenance and additional chest tiers easier.
+---------------------------------------------------------------------------------------------------
+Version: 0.16.6
+Date: 2018-05-28
+  Bugfixes:
+    - Added support for Factorissimo2 and other mods that use additional surfaces.
+---------------------------------------------------------------------------------------------------
+Version: 0.16.5
+Date: 2018-04-22
+  Features:
+    - Added chest lengths 34, 41, 48, and 55. Contributed by Gaddhi.
+---------------------------------------------------------------------------------------------------
+Version: 0.16.4
+Date: 2018-04-20
+  Changes:
+    - Increased Modular Chest capacity to 32 slots, matching the iron chest.
+    - Merged chests now retain their inventory contents.
+    - Modular Chests can now fast-replace other chests.
+---------------------------------------------------------------------------------------------------
+Version: 0.16.3
+Date: 2018-04-10
+  Changes:
+    - Corrected Modular Chest names and descriptions.
+    - Added circuit-network connection points.
+---------------------------------------------------------------------------------------------------
+Version: 0.16.2
+  Features:
+    - Added the Modular Chest item.
+    - Added merged chest lengths 6, 13, 20, and 27.

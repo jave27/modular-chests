@@ -6,7 +6,7 @@ function CreateChestItem(ChestName, IconName, Order, PlaceResult)
          name = ChestName,
          icons = {
             {
-               icon = "__LB-Modular-Chests__/graphics/icons/"..IconName,
+               icon = "__modular-chests-continued__/graphics/icons/"..IconName,
                icon_size = 32,
                tint = {r=1,g=1,b=1,a=1}
             }

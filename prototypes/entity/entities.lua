@@ -1,17 +1,15 @@
 function CreateChestEntity(ChestName, BaseChestName, IconName, BaseInventorySize, NumChestsConnected, EntityGraphicsName, EntityWidth, EntityHeight, EntityShift, EntityCollisionBox, EntitySelectionBox)
-	ChestSizeIterator = NumChestsConnected
-	NumFillerChests = 0
+	local ChestSizeIterator = NumChestsConnected
+	local NumFillerChests = 0
 	while ChestSizeIterator > 6 do
 		NumFillerChests = NumFillerChests + 1
 		ChestSizeIterator = ChestSizeIterator - 7
 	end
 
-	data:extend(
-	{
-	  {
+	local ChestEntity = {
 	    type = "container",
 	    name = ChestName,
-	    icon = "__LB-Modular-Chests__/graphics/icons/"..IconName,
+	    icon = "__modular-chests-continued__/graphics/icons/"..IconName,
 	    icon_size = 32,
 	    flags = {"placeable-neutral", "player-creation"},
 	    minable = {mining_time = 1, result = BaseChestName, count = NumChestsConnected},
@@ -24,7 +22,7 @@ function CreateChestEntity(ChestName, BaseChestName, IconName, BaseInventorySize
 	    open_sound = { filename = "__base__/sound/metallic-chest-open.ogg" },
 	    close_sound = { filename = "__base__/sound/metallic-chest-close.ogg" },
 	    picture = {
-	        filename = "__LB-Modular-Chests__/graphics/entity/"..EntityGraphicsName,
+	        filename = "__modular-chests-continued__/graphics/entity/"..EntityGraphicsName,
 	        width = EntityWidth,
 	        height = EntityHeight,
 	        priority = "extra-high",
@@ -34,9 +32,19 @@ function CreateChestEntity(ChestName, BaseChestName, IconName, BaseInventorySize
 	    circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
 	    circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
 	    circuit_wire_max_distance = default_circuit_wire_max_distance
-	  },
 	}
-	)
+
+	-- Blueprints contain the merged entity, but players only craft the base
+	-- modular chest. Tell construction robots which item and quantity can
+	-- satisfy a merged chest ghost.
+	if NumChestsConnected > 1 then
+		ChestEntity.placeable_by = {
+			item = BaseChestName,
+			count = NumChestsConnected
+		}
+	end
+
+	data:extend({ChestEntity})
 end
 
 ------- Modular Iron Chest -------
