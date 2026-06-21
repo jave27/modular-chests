@@ -2,7 +2,8 @@
 Version: 2.0.16
 Date: 2026-06-21
   Bugfixes:
-    - Modular chests now merge only with adjacent chests of the same quality.
+    - Modular chests now find and merge with adjacent chests of the same quality. Entity lookups
+      now include quality instead of implicitly searching for normal-quality entities only.
     - Merged chests now retain the quality of their component chests, including the corresponding
       quality-based inventory-size bonus.
     - Item-stack quality is now preserved when chest contents are transferred during a merge.

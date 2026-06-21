@@ -86,11 +86,10 @@ function HandlePlacedEntity(event)
     local CurrentUserForce = event.entity.force
 
     local function FindChest(ChestName, Position)
-        local Chest = CurrentSurface.find_entity(ChestName, Position)
-        if Chest ~= nil and Chest.quality.name == CurrentQuality then
-            return Chest
-        end
-        return nil
+        return CurrentSurface.find_entity(
+            {name=ChestName, quality=CurrentQuality},
+            Position
+        )
     end
 
     function DestroyChest(Direction, OffsetPos)
