@@ -1,26 +1,23 @@
 param(
-    [string]$FactorioExe = $env:FACTORIO_EXE
+    [string]$FactorioExe = $env:FACTORIO_EXE,
+    [ValidateSet("Base", "Quality", "SpaceAge")]
+    [string]$ModSet = "Quality"
 )
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$outputRoot = Join-Path $repoRoot ".test-output"
-$modsDirectory = Join-Path $outputRoot "mods"
-$writeDataDirectory = Join-Path $outputRoot "factorio-data"
-$packageStage = Join-Path $outputRoot "package"
-$testSave = Join-Path $outputRoot "integration-test.zip"
-$scriptOutputDirectory = Join-Path $writeDataDirectory "script-output"
-$resultFile = Join-Path $scriptOutputDirectory "integration-test-result.txt"
-$logFile = Join-Path $writeDataDirectory "factorio-current.log"
 
 function Resolve-FactorioExecutable {
     param([string]$RequestedPath)
 
     $candidates = @()
     if ($RequestedPath) {
-        $candidates += $RequestedPath
+        if (-not (Test-Path -LiteralPath $RequestedPath -PathType Leaf)) {
+            throw "The requested Factorio executable does not exist: $RequestedPath"
+        }
+        return (Resolve-Path -LiteralPath $RequestedPath).Path
     }
 
     if ($PSVersionTable.PSEdition -eq "Desktop" -or $IsWindows) {
@@ -48,62 +45,27 @@ function Resolve-FactorioExecutable {
     throw "Factorio was not found. Set FACTORIO_EXE or pass -FactorioExe."
 }
 
-function New-PortableZip {
-    param(
-        [string]$SourceDirectory,
-        [string]$RootEntryName,
-        [string]$Destination
-    )
-
-    Add-Type -AssemblyName System.IO.Compression
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-
-    if (Test-Path -LiteralPath $Destination) {
-        Remove-Item -LiteralPath $Destination -Force
-    }
-
-    $stream = [System.IO.File]::Open(
-        $Destination,
-        [System.IO.FileMode]::CreateNew
-    )
-
-    try {
-        $archive = [System.IO.Compression.ZipArchive]::new(
-            $stream,
-            [System.IO.Compression.ZipArchiveMode]::Create,
-            $false
-        )
-
-        try {
-            Get-ChildItem -LiteralPath $SourceDirectory -Recurse -File |
-                ForEach-Object {
-                    $relative = $_.FullName.Substring($SourceDirectory.Length).
-                        TrimStart('\', '/').
-                        Replace('\', '/')
-                    $entryName = "$RootEntryName/$relative"
-                    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
-                        $archive,
-                        $_.FullName,
-                        $entryName,
-                        [System.IO.Compression.CompressionLevel]::Optimal
-                    ) | Out-Null
-                }
-        }
-        finally {
-            $archive.Dispose()
-        }
-    }
-    finally {
-        $stream.Dispose()
-    }
-}
-
 $FactorioExe = Resolve-FactorioExecutable $FactorioExe
+$versionOutput = (& $FactorioExe --version | Out-String)
+if ($LASTEXITCODE -ne 0 -or $versionOutput -notmatch 'Version:\s+(2\.[01])\.\d+') {
+    throw "Expected a Factorio 2.0 or 2.1 executable. Version output: $versionOutput"
+}
+$factorioVersion = $Matches[1]
+$testRoot = Join-Path $repoRoot ".test-output"
+New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
+$testRoot = (Resolve-Path -LiteralPath $testRoot).Path
+$outputRoot = [System.IO.Path]::GetFullPath((Join-Path $testRoot "$factorioVersion-$ModSet"))
+# Verify the absolute cleanup target before deleting any generated files.
+if ((Split-Path -Parent $outputRoot) -ne $testRoot) {
+    throw "Test output must be a direct child of $testRoot"
+}
+$modsDirectory = Join-Path $outputRoot "mods"
+$writeDataDirectory = Join-Path $outputRoot "factorio-data"
+$testSave = Join-Path $outputRoot "integration-test.zip"
+$resultFile = Join-Path $writeDataDirectory "script-output/integration-test-result.txt"
+$logFile = Join-Path $writeDataDirectory "factorio-current.log"
 $info = Get-Content -LiteralPath (Join-Path $repoRoot "info.json") -Raw |
     ConvertFrom-Json
-$packageName = "$($info.name)_$($info.version)"
-$packageDirectory = Join-Path $packageStage $packageName
-$packageZip = Join-Path $modsDirectory "$packageName.zip"
 $testsDirectory = Join-Path $repoRoot "tests"
 $testModSource = Join-Path $testsDirectory "integration-mod"
 $testModDestination = Join-Path $modsDirectory "modular-chests-continued-tests_1.0.0"
@@ -114,38 +76,38 @@ if (Test-Path -LiteralPath $outputRoot) {
 
 New-Item -ItemType Directory -Path $modsDirectory | Out-Null
 New-Item -ItemType Directory -Path $writeDataDirectory | Out-Null
-New-Item -ItemType Directory -Path $packageDirectory | Out-Null
-
-$excludedNames = @(
-    ".git",
-    ".test-output",
-    "scripts",
-    "tests",
-    "DEVELOPMENT.md",
-    ".gitignore"
-)
-
-Get-ChildItem -LiteralPath $repoRoot -Force |
-    Where-Object { $_.Name -notin $excludedNames } |
-    Copy-Item -Destination $packageDirectory -Recurse
-
-New-PortableZip $packageDirectory $packageName $packageZip
+$packageZip = & (Join-Path $PSScriptRoot "package.ps1") `
+    -FactorioVersion $factorioVersion -OutputDirectory $modsDirectory
 Copy-Item -LiteralPath $testModSource -Destination $testModDestination -Recurse
+$testInfoPath = Join-Path $testModDestination "info.json"
+$testInfo = Get-Content -LiteralPath $testInfoPath -Raw | ConvertFrom-Json
+$testInfo.factorio_version = $factorioVersion
+$testInfo | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $testInfoPath -Encoding UTF8
 
-$modList = @{
-    mods = @(
+$enabledMods = @(
         @{name = "base"; enabled = $true},
-        @{name = "quality"; enabled = $true},
+        @{name = "quality"; enabled = ($ModSet -ne "Base")},
+        @{name = "elevated-rails"; enabled = ($ModSet -eq "SpaceAge")},
+        @{name = "space-age"; enabled = ($ModSet -eq "SpaceAge")},
         @{name = $info.name; enabled = $true},
         @{name = "modular-chests-continued-tests"; enabled = $true}
-    )
-} | ConvertTo-Json -Depth 4
+)
+if ($factorioVersion -eq "2.1") {
+    $enabledMods += @{name = "recycler"; enabled = ($ModSet -ne "Base")}
+}
+$modList = @{ mods = $enabledMods } | ConvertTo-Json -Depth 4
 Set-Content -LiteralPath (Join-Path $modsDirectory "mod-list.json") -Value $modList
 
 $writeDataPath = $writeDataDirectory.Replace('\', '/')
+$readDataPath = "__PATH__system-read-data__"
+$installRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $FactorioExe))
+$portableData = Join-Path $installRoot "data"
+if (Test-Path -LiteralPath (Join-Path $portableData "core/info.json")) {
+    $readDataPath = $portableData.Replace('\', '/')
+}
 $config = @"
 [path]
-read-data=__PATH__system-read-data__
+read-data=$readDataPath
 write-data=$writeDataPath
 
 [general]
@@ -153,16 +115,20 @@ locale=en
 "@
 Set-Content -LiteralPath (Join-Path $outputRoot "config.ini") -Value $config
 
-& $FactorioExe `
+$factorioOutput = & $FactorioExe `
     --config (Join-Path $outputRoot "config.ini") `
     --mod-directory $modsDirectory `
-    --create $testSave | Out-Null
+    --create $testSave 2>&1 | Out-String
 
-if (-not (Test-Path -LiteralPath $resultFile)) {
+$factorioExitCode = $LASTEXITCODE
+if ($factorioExitCode -ne 0 -or -not (Test-Path -LiteralPath $resultFile)) {
     if (Test-Path -LiteralPath $logFile) {
         Get-Content -LiteralPath $logFile -Tail 80
     }
-    throw "Integration tests did not produce a success marker."
+    else {
+        Write-Host $factorioOutput
+    }
+    throw "Integration tests failed (exit $factorioExitCode) or did not produce a success marker."
 }
 
 $result = (Get-Content -LiteralPath $resultFile -Raw).Trim()
@@ -184,5 +150,5 @@ finally {
     $archive.Dispose()
 }
 
-Write-Host "PASS: Factorio integration tests"
+Write-Host "PASS: Factorio $factorioVersion integration tests ($ModSet)"
 Write-Host "Package: $packageZip"

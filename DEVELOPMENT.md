@@ -10,7 +10,9 @@ The repository includes a Factorio integration-test mod under
 - rejection of mixed-quality merges;
 - preservation of item-stack quality;
 - preservation of red and green circuit wires during both initial merging and
-  later expansion.
+  later expansion;
+- vertical steel chest merging, expansion, inventory capacity, and item retention;
+- circuit connector graphics and merged-chest construction item metadata.
 
 Run the suite from the repository root:
 
@@ -26,12 +28,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/test.ps1
 
 The script:
 
-1. reads the mod name and version from `info.json`;
-2. packages the working tree with portable `/` ZIP entry separators;
-3. creates an isolated Factorio write-data directory under `.test-output`;
+1. detects Factorio 2.0 or 2.1 from the selected executable;
+2. calls `scripts/package.ps1` to build the matching mod archive;
+3. creates an isolated directory under `.test-output/<game-version>-<mod-set>`;
 4. loads the packaged mod and the integration-test mod;
 5. creates a temporary map, causing the assertions in the test mod to run;
-6. prints `PASS` or the relevant Factorio log when a test fails.
+6. checks the exit code and success marker, then prints `PASS` or the failure log.
 
 Generated files are ignored by Git.
 
@@ -51,9 +53,27 @@ You can also pass the executable explicitly:
 ./scripts/test.ps1 -FactorioExe "D:\Games\Factorio\bin\x64\factorio.exe"
 ```
 
-The harness supports Windows PowerShell 5.1 and PowerShell 7. Factorio itself
-is the only external program required. The full suite enables Factorio's
-`quality` expansion mod because several tests exercise quality behavior.
+The harness supports Windows PowerShell 5.1 and PowerShell 7, including portable
+Linux headless installations. Factorio itself is the only external program
+required. The default configuration enables `quality` for quality assertions.
+Choose `-ModSet Base` to test without expansion mods or `-ModSet SpaceAge` to
+test with the full expansion. Quality assertions run when `quality` is enabled.
+
+Run each configuration against **both** game executables before release:
+
+```powershell
+./scripts/test.ps1 -FactorioExe "D:\Factorio-2.0\bin\x64\factorio.exe" -ModSet Base
+./scripts/test.ps1 -FactorioExe "D:\Factorio-2.0\bin\x64\factorio.exe" -ModSet Quality
+./scripts/test.ps1 -FactorioExe "D:\Factorio-2.0\bin\x64\factorio.exe" -ModSet SpaceAge
+./scripts/test.ps1 -FactorioExe "D:\Factorio-2.1\bin\x64\factorio.exe" -ModSet Base
+./scripts/test.ps1 -FactorioExe "D:\Factorio-2.1\bin\x64\factorio.exe" -ModSet Quality
+./scripts/test.ps1 -FactorioExe "D:\Factorio-2.1\bin\x64\factorio.exe" -ModSet SpaceAge
+```
+
+Each configuration explicitly enables or disables the bundled mods, so a test
+cannot silently pick up Space Age from an existing player configuration. Logs,
+the generated mod list, packaged ZIP, and temporary save remain in that run's
+output directory.
 
 ## Adding integration tests
 
@@ -73,6 +93,21 @@ Tests should:
 
 ## Release packaging
 
-The test script's generated ZIP is suitable for validating archive layout, but
-release files should still be built from a clean worktree. ZIP entries created
-by the script always use `/`, making them valid on Windows, Linux, and macOS.
+Factorio's `factorio_version` field accepts one game major version, so a single
+archive cannot declare both 2.0 and 2.1. Keep `info.json` on the 2.0 release line
+and share all Lua sources. The package script stamps the target game version,
+base dependency, mod version, and latest changelog entry in the archive only.
+Both release lines use the source version's patch number: source `2.0.19`
+produces mod `2.0.19` for Factorio 2.0 and mod `2.1.19` for Factorio 2.1.
+
+Build both packages from the repository root:
+
+```powershell
+./scripts/package.ps1 -FactorioVersion 2.0
+./scripts/package.ps1 -FactorioVersion 2.1
+```
+
+The ZIPs appear in ignored `dist/`; `-OutputDirectory` selects another location.
+The integration harness uses this same packager. Only mod assets are included,
+and ZIP entries always use `/` for Windows, Linux, and macOS. Build published
+releases from a clean worktree and run the full matrix above.

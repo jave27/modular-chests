@@ -30,8 +30,9 @@ function CreateChestEntity(ChestName, BaseChestName, IconName, BaseInventorySize
 	        shift = EntityShift,
 			scale = 1,
 	      },
-	    circuit_wire_connection_point = circuit_connector_definitions["chest"].points,
-	    circuit_connector_sprites = circuit_connector_definitions["chest"].sprites,
+	    -- Factorio 2.0 uses one connector definition; 2.1 uses an array.
+	    -- Copy the vanilla chest's shape for the running game version.
+	    circuit_connector = table.deepcopy(data.raw.container["iron-chest"].circuit_connector),
 	    circuit_wire_max_distance = default_circuit_wire_max_distance
 	}
 

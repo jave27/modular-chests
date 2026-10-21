@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.19
+Date: 2026-10-20
+  Changes:
+    - Added Factorio 2.1 packages built from the same source as the maintained Factorio 2.0 release.
+      Packages use separate 2.0.x and 2.1.x version lines with the same patch number.
+  Bugfixes:
+    - Replaced obsolete circuit connector fields with the vanilla chest connector definition,
+      supporting both the single connector in Factorio 2.0 and the connector array in 2.1.
+  Testing:
+    - Added base-game, Quality, and Space Age integration-test configurations for both versions.
+    - Added connector graphics, blueprint construction metadata, and vertical steel expansion checks.
+---------------------------------------------------------------------------------------------------
 Version: 2.0.18
 Date: 2026-06-21
   Changes:

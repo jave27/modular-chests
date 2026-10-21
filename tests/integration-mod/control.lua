@@ -165,11 +165,41 @@ local function test_wire_preservation(surface)
   )
 end
 
+local function test_steel_vertical_expansion(surface)
+  local function place(y)
+    return surface.create_entity{
+      name = "modular-steel-chest",
+      position = {30, y},
+      force = game.forces.player,
+      raise_built = true
+    }
+  end
+  local first = place(0)
+  first.insert{name = "steel-plate", count = 10}
+  for y = 1, 5 do place(y) end
+  local merged = assert_single_entity(
+    surface, "long-steel-chest-v", {{29, -1}, {31, 7}},
+    "six steel chests did not merge vertically"
+  )
+  assert(#merged.get_inventory(defines.inventory.chest) == 768, "wrong steel chest capacity")
+  for y = 6, 12 do place(y) end
+  local expanded = assert_single_entity(
+    surface, "long-steel-chest-v-1x13", {{29, -1}, {31, 14}},
+    "steel chest did not expand vertically"
+  )
+  assert(#expanded.get_inventory(defines.inventory.chest) == 1536, "wrong expanded steel capacity")
+  assert(expanded.get_item_count("steel-plate") == 10, "vertical expansion lost items")
+  assert(expanded.force == game.forces.player, "vertical expansion changed force")
+end
+
 script.on_init(function()
   local surface = game.surfaces[1]
   test_normal_merge(surface)
-  test_quality_merge(surface)
-  test_mixed_quality_does_not_merge(surface)
+  if script.active_mods["quality"] then
+    test_quality_merge(surface)
+    test_mixed_quality_does_not_merge(surface)
+  end
   test_wire_preservation(surface)
+  test_steel_vertical_expansion(surface)
   helpers.write_file("integration-test-result.txt", "PASS")
 end)

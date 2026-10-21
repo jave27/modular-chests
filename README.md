@@ -5,6 +5,21 @@ Modular Chests Continued is the maintained successor to
 or steel modular chests next to one another and they merge into long storage
 chests designed for train loading and unloading.
 
+## Factorio compatibility
+
+Factorio 2.0 and 2.1 are supported with the same mod code. Factorio accepts only
+one game version in each package's `info.json`, so install the package matching
+your game:
+
+| Factorio | Mod release |
+| --- | --- |
+| 2.0 | 2.0.19 |
+| 2.1 | 2.1.19 |
+
+Both releases keep the same mod identity and prototype names. When upgrading
+Factorio to 2.1, update the mod to the 2.1 release as well. The base game is
+supported without the expansion; Quality and Space Age are also supported.
+
 ## Project history
 
 Lord Binary (`krisgreg`) created Modular Chests for Factorio 0.16 in 2018.

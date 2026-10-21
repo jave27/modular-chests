@@ -1,5 +1,6 @@
 # Portable integration-test output
 /.test-output/
+/dist/
 
 # Locally packaged releases
 /modular-chests-continued_*.zip
